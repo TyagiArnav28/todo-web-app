@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My To-Do List</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-tasks"></i> My To-Do List</h1>
+            <p class="subtitle">Stay organized, stay productive!</p>
+        </header>
+
+        <!-- Add Task Form -->
+        <div class="add-task-section">
+            <form action="/add" method="POST" class="add-task-form">
+                <input 
+                    type="text" 
+                    name="task" 
+                    placeholder="What needs to be done?" 
+                    required
+                    class="task-input"
+                    autocomplete="off"
+                >
+                <button type="submit" class="btn-add">
+                    <i class="fas fa-plus"></i> Add Task
+                </button>
+            </form>
+        </div>
+
+        <!-- Task Statistics -->
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number">{{ todos|length }}</span>
+                <span class="stat-label">Total Tasks</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ todos|selectattr('completed', 'equalto', false)|list|length }}</span>
+                <span class="stat-label">Active</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">{{ todos|selectattr('completed', 'equalto', true)|list|length }}</span>
+                <span class="stat-label">Completed</span>
+            </div>
+        </div>
+
+        <!-- Clear Completed Button -->
+        {% if todos|selectattr('completed', 'equalto', true)|list|length > 0 %}
+        <div class="clear-section">
+            <form action="/clear-completed" method="POST" onsubmit="return confirm('Clear all completed tasks?');">
+                <button type="submit" class="btn-clear">
+                    <i class="fas fa-trash-alt"></i> Clear Completed
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <!-- Task List -->
+        <div class="tasks-section">
+            {% if todos %}
+                <ul class="task-list">
+                    {% for todo in todos %}
+                    <li class="task-item {% if todo.completed %}completed{% endif %}">
+                        <div class="task-content">
+                            <form action="/complete/{{ todo.id }}" method="POST" class="complete-form">
+                                <button type="submit" class="btn-checkbox">
+                                    {% if todo.completed %}
+                                    <i class="fas fa-check-circle"></i>
+                                    {% else %}
+                                    <i class="far fa-circle"></i>
+                                    {% endif %}
+                                </button>
+                            </form>
+                            <span class="task-text">{{ todo.task }}</span>
+                            <span class="task-date">{{ todo.created_at.split()[0] }}</span>
+                        </div>
+                        <form action="/delete/{{ todo.id }}" method="POST" class="delete-form" onsubmit="return confirm('Delete this task?');">
+                            <button type="submit" class="btn-delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-check"></i>
+                    <h2>No tasks yet!</h2>
+                    <p>Add your first task above to get started.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <footer>
+            <p>Made with <i class="fas fa-heart"></i> using Flask & Python</p>
+        </footer>
+    </div>
+</body>
+</html>
